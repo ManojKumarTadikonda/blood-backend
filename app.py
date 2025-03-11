@@ -25,19 +25,33 @@ with open("bloodbank.json", "r") as f:
 
 # ✅ Load credentials from environment variable
 if "GOOGLE_CREDENTIALS" in os.environ:
+    # Decode the Base64
     credentials_json = base64.b64decode(os.environ["GOOGLE_CREDENTIALS"]).decode("utf-8")
     credentials_info = json.loads(credentials_json)
     credentials = service_account.Credentials.from_service_account_info(credentials_info)
 else:
     raise Exception("GOOGLE_CREDENTIALS environment variable not set")
 
-# ✅ Initialize Vertex AI
-aiplatform.init(project="strategy-agent", location="us-central1", credentials=credentials)
+# ✅ Initialize Vertex AI with the credentials
+aiplatform.init(
+    project="strategy-agent",  # ✅ Replace this with your project ID
+    location="us-central1",
+    credentials=credentials
+)
 
-# ✅ Initialize the Gemini Model
-llm = VertexAI(model_name="gemini-1.5-flash", max_output_tokens=3000, temperature=0.7)
-embeddings = VertexAIEmbeddings(model_name="textembedding-gecko@003")
+# ✅ ✅ ✅ Fix the VertexAIEmbeddings to Use Credentials
+llm = VertexAI(
+    model_name="gemini-1.5-flash",
+    max_output_tokens=3000,
+    temperature=0.7,
+    credentials=credentials
+)
 
+# ✅ ✅ ✅ THIS IS THE MOST IMPORTANT FIX
+embeddings = VertexAIEmbeddings(
+    model_name="textembedding-gecko@003",
+    credentials=credentials
+)
 
 # Create vector store
 documents = [Document(page_content=f"Pincode {zone['pincode']}: {json.dumps(zone)}", metadata={"pincode": zone["pincode"]}) for zone in blood_bank_data]
