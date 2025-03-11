@@ -23,23 +23,22 @@ import os
 with open("bloodbank.json", "r") as f:
     blood_bank_data = json.load(f)
 
-# ✅ Load credentials from environment variable
 if "GOOGLE_CREDENTIALS" in os.environ:
-    # Decode the Base64
+    # Decode the Base64 credentials
     credentials_json = base64.b64decode(os.environ["GOOGLE_CREDENTIALS"]).decode("utf-8")
     credentials_info = json.loads(credentials_json)
     credentials = service_account.Credentials.from_service_account_info(credentials_info)
 else:
     raise Exception("GOOGLE_CREDENTIALS environment variable not set")
 
-# ✅ Initialize Vertex AI with the credentials
+# ✅ Initialize Vertex AI with your credentials
 aiplatform.init(
-    project="strategy-agent",  # ✅ Replace this with your project ID
+    project="strategy-agent",  # ✅ Replace with your actual GCP Project ID
     location="us-central1",
     credentials=credentials
 )
 
-# ✅ ✅ ✅ Fix the VertexAIEmbeddings to Use Credentials
+# ✅ ✅ ✅ Fix the VertexAI LLM (No Changes Needed Here)
 llm = VertexAI(
     model_name="gemini-1.5-flash",
     max_output_tokens=3000,
@@ -47,7 +46,8 @@ llm = VertexAI(
     credentials=credentials
 )
 
-# ✅ ✅ ✅ THIS IS THE MOST IMPORTANT FIX
+# ✅ ✅ ✅ FIX THE EMBEDDINGS (This Was Causing The Error)
+# ✅ Now pass credentials to the embeddings explicitly
 embeddings = VertexAIEmbeddings(
     model_name="textembedding-gecko@003",
     credentials=credentials
