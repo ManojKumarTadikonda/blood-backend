@@ -15,6 +15,11 @@ import httpx
 from pathlib import Path
 # add middlewares
 from fastapi.middleware.cors import CORSMiddleware
+import os
+
+# Set the Google Application Credentials
+os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "C:/Users/manoj/Desktop/blood-backend/vertical-setup-450217-n2-8904fd8695bd.json"
+
 
 # Load blood bank data
 with open("bloodbank.json", "r") as f:
@@ -24,9 +29,11 @@ with open("bloodbank.json", "r") as f:
 credentials = service_account.Credentials.from_service_account_file("vertical-setup-450217-n2-8904fd8695bd.json")
 aiplatform.init(project="strategy-agent", location="us-central1", credentials=credentials)
 
-# Initialize Vertex AI components
-llm = VertexAI(model_name="gemini-1.5-flash", credentials=credentials, max_output_tokens=3000, temperature=0.7)
-embeddings = VertexAIEmbeddings(model_name="textembedding-gecko@003", credentials=credentials)
+
+# Initialize Vertex AI with credentials
+llm = VertexAI(model_name="gemini-1.5-flash", max_output_tokens=3000, temperature=0.7)
+embeddings = VertexAIEmbeddings(model_name="textembedding-gecko@003")
+
 
 # Create vector store
 documents = [Document(page_content=f"Pincode {zone['pincode']}: {json.dumps(zone)}", metadata={"pincode": zone["pincode"]}) for zone in blood_bank_data]
