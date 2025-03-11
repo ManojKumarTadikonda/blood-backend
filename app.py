@@ -17,20 +17,22 @@ from pathlib import Path
 from fastapi.middleware.cors import CORSMiddleware
 import os
 
-# Set the Google Application Credentials
-os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "C:/Users/manoj/Desktop/blood-backend/vertical-setup-450217-n2-8904fd8695bd.json"
-
 
 # Load blood bank data
 with open("bloodbank.json", "r") as f:
     blood_bank_data = json.load(f)
 
-# Initialize Vertex AI
-credentials = service_account.Credentials.from_service_account_file("vertical-setup-450217-n2-8904fd8695bd.json")
+# ✅ Load credentials from environment variable
+if "GOOGLE_CREDENTIALS" in os.environ:
+    credentials_info = json.loads(os.environ["GOOGLE_CREDENTIALS"])
+    credentials = service_account.Credentials.from_service_account_info(credentials_info)
+else:
+    raise Exception("GOOGLE_CREDENTIALS environment variable not set")
+
+# ✅ Initialize Vertex AI with credentials
 aiplatform.init(project="strategy-agent", location="us-central1", credentials=credentials)
 
-
-# Initialize Vertex AI with credentials
+# ✅ Initialize the Gemini Model
 llm = VertexAI(model_name="gemini-1.5-flash", max_output_tokens=3000, temperature=0.7)
 embeddings = VertexAIEmbeddings(model_name="textembedding-gecko@003")
 
