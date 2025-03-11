@@ -1,3 +1,4 @@
+import base64
 from fastapi import FastAPI
 from pydantic import BaseModel
 from typing import List
@@ -24,12 +25,13 @@ with open("bloodbank.json", "r") as f:
 
 # ✅ Load credentials from environment variable
 if "GOOGLE_CREDENTIALS" in os.environ:
-    credentials_info = json.loads(os.environ["GOOGLE_CREDENTIALS"])
+    credentials_json = base64.b64decode(os.environ["GOOGLE_CREDENTIALS"]).decode("utf-8")
+    credentials_info = json.loads(credentials_json)
     credentials = service_account.Credentials.from_service_account_info(credentials_info)
 else:
     raise Exception("GOOGLE_CREDENTIALS environment variable not set")
 
-# ✅ Initialize Vertex AI with credentials
+# ✅ Initialize Vertex AI
 aiplatform.init(project="strategy-agent", location="us-central1", credentials=credentials)
 
 # ✅ Initialize the Gemini Model
